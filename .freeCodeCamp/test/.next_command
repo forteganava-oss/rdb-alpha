@@ -86,3 +86,4 @@ trap '__vsc_preexec_all "$_"' DEBUG
 __vsc_original_prompt_command=${PROMPT_COMMAND:-}
 chmod +x queries.sh
 chmod +x insert_data.sh
+pg_dump -cC --inserts -U freecodecamp worldcup > worldcup.sql

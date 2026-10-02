@@ -1,0 +1,38 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Load World Cup data",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-c",
+				"set -e\nif ! psql --username=freecodecamp --dbname=postgres --tuples-only --no-align --quiet --command=\"SELECT 1 FROM pg_database WHERE datname='worldcup'\" | grep -q 1; then\n  psql --username=freecodecamp --dbname=postgres --set=ON_ERROR_STOP=1 --command=\"CREATE DATABASE worldcup\"\nfi\npsql --username=freecodecamp --dbname=worldcup --set=ON_ERROR_STOP=1 <<'SQL'\nCREATE TABLE IF NOT EXISTS teams (\n  team_id SERIAL PRIMARY KEY,\n  name VARCHAR(30) UNIQUE NOT NULL\n);\nCREATE TABLE IF NOT EXISTS games (\n  game_id SERIAL PRIMARY KEY,\n  year INT NOT NULL,\n  round VARCHAR(30) NOT NULL,\n  winner_id INT NOT NULL REFERENCES teams(team_id),\n  opponent_id INT NOT NULL REFERENCES teams(team_id),\n  winner_goals INT NOT NULL,\n  opponent_goals INT NOT NULL\n);\nSQL\nbash insert_data.sh\npsql --username=freecodecamp --dbname=worldcup --tuples-only --no-align --command=\"SELECT (SELECT COUNT(*) FROM teams) AS teams, (SELECT COUNT(*) FROM games) AS games;\""
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify World Cup import",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-c",
+				"set -e\nbash insert_data.sh\npsql --username=freecodecamp --dbname=worldcup --tuples-only --no-align --command=\"SELECT (SELECT COUNT(*) FROM teams) AS teams, (SELECT COUNT(*) FROM games) AS games;\""
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Compare queries output",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-c",
+				"diff -u expected_output.txt <(bash queries.sh)"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
